@@ -52,7 +52,7 @@ export default function RootLayout({
             <AppSidebar />
 
             {/* Main Page Content */}
-            <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <main className="flex-1 overflow-y-auto">
               <SidebarTrigger className="mb-4 text-text-primary md:hidden" />
               {children}
             </main>

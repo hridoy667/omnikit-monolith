@@ -1,10 +1,13 @@
+import { ExploreToolsSection } from "@/components/all-tools";
+import { HeroSection } from "@/components/hero";
 import Image from "next/image";
 
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center justify-center font-sans dark:bg-black">
-      <main className="flex flex-1 w-full flex-col items-center justify-between py-32 px-16 dark:bg-black sm:items-start">
-        
+      <main className="flex flex-1 w-full flex-col items-center justify-between dark:bg-black sm:items-start">
+        <HeroSection/>
+        <ExploreToolsSection/>
       </main>
     </div>
   );

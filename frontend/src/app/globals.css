@@ -7,6 +7,7 @@
 :root {
   --bg-page: #FAFAFB;
   --bg-surface: #FFFFFF;
+  --bg-sidebar-deep: #F3F4F6; /* Deeper gray/slate for light mode */
   --border-subtle: #E4E7EC;
 
   --text-primary: #1E1B2E;
@@ -49,11 +50,12 @@
   
   --radius: 0.625rem;
   
-  --sidebar: var(--bg-surface);
+  /* Sidebar mapped to the deeper background token */
+  --sidebar: var(--bg-sidebar-deep); 
   --sidebar-foreground: var(--text-primary);
   --sidebar-primary: var(--accent-primary);
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F5F9;
+  --sidebar-accent: #E2E8F0;
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--border-subtle);
   --sidebar-ring: var(--accent-primary);
@@ -62,6 +64,7 @@
 .dark {
   --bg-page: #0B0A10;
   --bg-surface: #13111C;
+  --bg-sidebar-deep: #08070D; /* Deeper dark background than page/surface */
   --border-subtle: #262335;
 
   --text-primary: #F3F4F6;
@@ -100,20 +103,21 @@
   --input: var(--border-subtle);
   --ring: var(--accent-primary);
   
-  --sidebar: var(--bg-surface);
+  /* Sidebar mapped to the deeper background token for dark mode */
+  --sidebar: var(--bg-sidebar-deep);
   --sidebar-foreground: var(--text-primary);
   --sidebar-primary: var(--accent-primary);
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1E1B2E;
+  --sidebar-accent: #181524;
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--border-subtle);
   --sidebar-ring: var(--accent-primary);
 }
 
 @theme inline {
-  /* Custom Utilities (Your explicit design tokens) */
   --color-page: var(--bg-page);
   --color-surface: var(--bg-surface);
+  --color-sidebar-deep: var(--bg-sidebar-deep);
   --color-subtle: var(--border-subtle);
   
   --color-text-primary: var(--text-primary);
@@ -127,7 +131,6 @@
 
   --background-image-gradient-hero: var(--gradient-hero);
 
-  /* Standard Tailwind / shadcn mapped theme colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
