@@ -121,7 +121,7 @@ const toolsList: ToolItem[] = [
 ];
 export function ExploreToolsSection() {
   return (
-    <section className="w-full space-y-5 px-2 sm:px-4 py-6">
+    <section id="tools" className="w-full space-y-5 px-2 sm:px-4 py-6">
       {/* Section Heading */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-text-primary">

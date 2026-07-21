@@ -7,7 +7,7 @@
 :root {
   --bg-page: #FAFAFB;
   --bg-surface: #FFFFFF;
-  --bg-sidebar-deep: #F3F4F6; /* Deeper gray/slate for light mode */
+  --bg-sidebar-deep: #F3F4F6;
   --border-subtle: #E4E7EC;
 
   --text-primary: #1E1B2E;
@@ -22,36 +22,36 @@
   --gradient-hero: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
   --background: var(--bg-page);
   --foreground: var(--text-primary);
-  
+
   --card: var(--bg-surface);
   --card-foreground: var(--text-primary);
-  
+
   --popover: var(--bg-surface);
   --popover-foreground: var(--text-primary);
-  
+
   --primary: var(--accent-primary);
   --primary-foreground: #FFFFFF;
-  
+
   --secondary: #F1F5F9;
   --secondary-foreground: var(--text-primary);
-  
+
   --muted: #F1F5F9;
   --muted-foreground: var(--text-secondary);
-  
+
   --accent: #F1F5F9;
   --accent-foreground: var(--text-primary);
-  
+
   --destructive: var(--accent-error);
   --destructive-foreground: #FFFFFF;
-  
+
   --border: var(--border-subtle);
   --input: var(--border-subtle);
   --ring: var(--accent-primary);
-  
+
   --radius: 0.625rem;
-  
+
   /* Sidebar mapped to the deeper background token */
-  --sidebar: var(--bg-sidebar-deep); 
+  --sidebar: var(--bg-sidebar-deep);
   --sidebar-foreground: var(--text-primary);
   --sidebar-primary: var(--accent-primary);
   --sidebar-primary-foreground: #FFFFFF;
@@ -64,7 +64,7 @@
 .dark {
   --bg-page: #0B0A10;
   --bg-surface: #13111C;
-  --bg-sidebar-deep: #08070D; /* Deeper dark background than page/surface */
+  --bg-sidebar-deep: #08070D;
   --border-subtle: #262335;
 
   --text-primary: #F3F4F6;
@@ -77,32 +77,32 @@
   --accent-error: #FB7185;
   --background: var(--bg-page);
   --foreground: var(--text-primary);
-  
+
   --card: var(--bg-surface);
   --card-foreground: var(--text-primary);
-  
+
   --popover: var(--bg-surface);
   --popover-foreground: var(--text-primary);
-  
+
   --primary: var(--accent-primary);
   --primary-foreground: #FFFFFF;
-  
+
   --secondary: #1E1B2E;
   --secondary-foreground: var(--text-primary);
-  
+
   --muted: #1E1B2E;
   --muted-foreground: var(--text-secondary);
-  
+
   --accent: #1E1B2E;
   --accent-foreground: var(--text-primary);
-  
+
   --destructive: var(--accent-error);
   --destructive-foreground: #FFFFFF;
-  
+
   --border: var(--border-subtle);
   --input: var(--border-subtle);
   --ring: var(--accent-primary);
-  
+
   /* Sidebar mapped to the deeper background token for dark mode */
   --sidebar: var(--bg-sidebar-deep);
   --sidebar-foreground: var(--text-primary);
@@ -119,10 +119,10 @@
   --color-surface: var(--bg-surface);
   --color-sidebar-deep: var(--bg-sidebar-deep);
   --color-subtle: var(--border-subtle);
-  
+
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
-  
+
   --color-accent-primary: var(--accent-primary);
   --color-accent-primary-hover: var(--accent-primary-hover);
   --color-accent-secondary: var(--accent-secondary);
@@ -176,10 +176,21 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html,
   body {
-    @apply bg-background text-foreground;
+    scroll-behavior: smooth;
   }
-  html {
-    @apply font-sans;
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Accessibility Override */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    scroll-behavior: auto !important;
   }
 }

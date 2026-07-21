@@ -31,6 +31,22 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Helper function to perform smooth scroll
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      const targetId = href.replace("#", "");
+      const element = document.getElementById(targetId);
+
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+
+      // Close mobile sheet if open
+      setIsOpen(false);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-subtle bg-surface/80 backdrop-blur-md px-3 sm:px-6">
       <div className="mx-auto flex h-14 items-center justify-between gap-4">
@@ -41,7 +57,6 @@ export function Navbar() {
             href="/"
             className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary rounded-lg p-1 transition-opacity hover:opacity-90"
           >
-            {/* Styled Modern Logo Icon */}
             <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-primary text-white shadow-sm ring-1 ring-white/20 transition-transform group-hover:scale-105">
               <Layers className="h-4 w-4" />
               <div className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-surface">
@@ -49,7 +64,6 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Logo Text */}
             <span className="font-semibold text-text-primary text-base tracking-tight">
               OmniTools
             </span>
@@ -62,6 +76,7 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
+              onClick={(e) => handleScroll(e, link.href)}
               className="rounded-md px-3.5 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary hover:bg-page"
             >
               {link.label}
@@ -69,9 +84,8 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Right Action Items (Right) */}
+        {/* Right Action Items */}
         <div className="hidden md:flex items-center gap-2">
-          {/* Settings Button */}
           <Button
             variant="ghost"
             size="icon-sm"
@@ -84,7 +98,6 @@ export function Navbar() {
             }
           />
 
-          {/* User Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-full border border-subtle bg-surface text-text-primary transition-colors hover:bg-page focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-accent-primary/10 text-accent-primary text-xs font-semibold">
@@ -122,7 +135,7 @@ export function Navbar() {
           </DropdownMenu>
         </div>
 
-        {/* Mobile Hamburger Trigger */}
+        {/* Mobile Hamburger Menu */}
         <div className="flex md:hidden">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger
@@ -157,7 +170,7 @@ export function Navbar() {
                     <Link
                       key={link.href}
                       href={link.href}
-                      onClick={() => setIsOpen(false)}
+                      onClick={(e) => handleScroll(e, link.href)}
                       className="rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary hover:bg-page"
                     >
                       {link.label}

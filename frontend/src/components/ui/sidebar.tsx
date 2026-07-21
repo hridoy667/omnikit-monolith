@@ -332,9 +332,29 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-header"
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-3", className)}
+      className={cn("flex flex-col gap-3 p-3 pb-2", className)}
       {...props}
-    />
+    >
+      {/* Brand / Logo Space */}
+      <div className="flex items-center gap-2 px-1 py-1">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold shadow-sm">
+          <Sparkles className="h-4 w-4" />
+        </div>
+        <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+          <span className="text-sm font-bold tracking-tight text-text-primary">
+            OmniTools
+          </span>
+          <span className="text-[10px] text-text-secondary font-medium">
+            Utility Suite v1.0
+          </span>
+        </div>
+      </div>
+
+      {/* Quick Search Bar to fill space */}
+      <div className="group-data-[collapsible=icon]:hidden">
+        <SidebarInput placeholder="Search tools..." className="h-9 text-xs" />
+      </div>
+    </div>
   )
 }
 
@@ -477,7 +497,7 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
     <ul
       data-slot="sidebar-menu"
       data-sidebar="menu"
-      className={cn("flex w-full min-w-0 flex-col gap-1 m-0 p-0 list-none", className)}
+      className={cn("flex w-full min-w-0 flex-col gap-2 m-0 p-0 list-none", className)} // Increased gap from gap-1 to gap-2
       {...props}
     />
   )
@@ -495,7 +515,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button group/menu-button flex h-9 w-full items-center gap-3 overflow-hidden rounded-lg px-3 text-left text-sm font-medium ring-sidebar-ring outline-hidden transition-all group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-9! group-data-[collapsible=icon]:p-2! hover:bg-page hover:text-accent-primary focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate",
+  "peer/menu-button group/menu-button flex w-full items-center gap-3 overflow-hidden rounded-lg text-left font-medium ring-sidebar-ring outline-hidden transition-all group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-2! hover:bg-page hover:text-accent-primary focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-4.5 [&_svg]:shrink-0 [&>span:last-child]:truncate",
   {
     variants: {
       variant: {
@@ -505,9 +525,9 @@ const sidebarMenuButtonVariants = cva(
           "bg-surface shadow-[0_0_0_1px_var(--subtle)] hover:bg-page hover:text-accent-primary data-[active=true]:bg-accent-primary/10 data-[active=true]:text-accent-primary data-[active=true]:font-semibold",
       },
       size: {
-        default: "h-9 text-sm",
-        sm: "h-8 text-xs",
-        lg: "h-11 text-sm group-data-[collapsible=icon]:p-0!",
+        default: "h-10 px-3.5 py-2.5 text-sm", // Increased height and padding
+        sm: "h-8 px-2.5 py-1.5 text-xs",
+        lg: "h-12 px-4 py-3 text-base group-data-[collapsible=icon]:p-0!", // Extra padded layout
       },
     },
     defaultVariants: {

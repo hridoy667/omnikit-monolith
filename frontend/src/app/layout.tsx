@@ -6,6 +6,7 @@ import { Navbar } from "@/components/navbar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { SmoothScroll } from "@/components/smooth-scroll";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -20,8 +21,37 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OmniKit Monolith",
-  description: "Next.js Monolith application",
+  title: {
+    default: "OmniTools — All-in-One AI & Developer Utility Suite",
+    template: "%s | OmniTools",
+  },
+  description:
+    "Free, fast, and privacy-first web utilities. AI content generators, image compressors, PDF toolkits, QR suites, ATS resume builders, and developer tools in one place.",
+  keywords: [
+    "AI Tools",
+    "Developer Tools",
+    "Image Compressor",
+    "PDF Toolkit",
+    "QR Code Generator",
+    "Resume Builder",
+    "SEO Auditor",
+    "URL Shortener",
+  ],
+  authors: [{ name: "OmniTools Team" }],
+  openGraph: {
+    title: "OmniTools — All-in-One AI & Developer Utility Suite",
+    description:
+      "Boost your productivity with free AI content repurposers, PDF suites, image compressors, and developer utilities.",
+    type: "website",
+    locale: "en_US",
+    siteName: "OmniTools",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OmniTools — All-in-One AI & Developer Utility Suite",
+    description:
+      "Free, fast, and privacy-first web utilities. AI generators, media compressors, PDF toolkits, and developer tools.",
+  },
 };
 
 export default function RootLayout({
@@ -42,22 +72,24 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-screen flex flex-col bg-page text-text-primary">
-        <TooltipProvider>
-          {/* Top Sticky Navbar */}
-          <Navbar />
+        <SmoothScroll>
+          <TooltipProvider>
+            {/* Top Sticky Navbar */}
+            <Navbar />
 
-          {/* Sidebar Provider wraps the area below Navbar */}
-          <SidebarProvider className="flex-1 flex flex-row min-h-0">
-            {/* Left Sidebar */}
-            <AppSidebar />
+            {/* Sidebar Provider wraps the area below Navbar */}
+            <SidebarProvider className="flex-1 flex flex-row min-h-0">
+              {/* Left Sidebar */}
+              <AppSidebar />
 
-            {/* Main Page Content */}
-            <main className="flex-1 overflow-y-auto">
-              <SidebarTrigger className="mb-4 text-text-primary md:hidden" />
-              {children}
-            </main>
-          </SidebarProvider>
-        </TooltipProvider>
+              {/* Main Page Content */}
+              <main className="flex-1 overflow-y-auto">
+                <SidebarTrigger className="mb-4 text-text-primary md:hidden" />
+                {children}
+              </main>
+            </SidebarProvider>
+          </TooltipProvider>
+        </SmoothScroll>
       </body>
     </html>
   );
