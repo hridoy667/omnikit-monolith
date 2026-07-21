@@ -1,0 +1,57 @@
+# ==========================================
+# Operating System & IDE Files
+# ==========================================
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+
+# ==========================================
+# Dependencies (Frontend & Backend)
+# ==========================================
+node_modules/
+/node_modules
+/*/node_modules
+.pnpm-store/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# ==========================================
+# Next.js / Frontend Builds
+# ==========================================
+.next/
+frontend/.next/
+out/
+build/
+dist/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Next.js telemetry/cache
+.vercel
+.swc/
+
+# ==========================================
+# Environment & Secrets (NEVER COMMIT)
+# ==========================================
+.env
+.env*.local
+.env.development
+.env.production
+*.pem
+
+# ==========================================
+# Testing & Coverage
+# ==========================================
+coverage/
+.nyc_output/
