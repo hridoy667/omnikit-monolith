@@ -59,17 +59,18 @@ export function Navbar() {
 
                 {/* Right Action Items */}
                 <div className="hidden md:flex items-center gap-3">
-                    {/* Settings / Gear Button (Left of User Menu) */}
+                    {/* Settings / Gear Button */}
                     <Button
                         variant="outline"
                         size="icon"
                         className="h-9 w-9 rounded-full border-subtle bg-surface text-text-primary transition-colors hover:bg-page"
-                        asChild
-                    >
-                        <Link href="#settings" aria-label="Settings">
-                            <Settings className="h-4 w-4" />
-                        </Link>
-                    </Button>
+                        nativeButton={false}
+                        render={
+                            <Link href="#settings" aria-label="Settings">
+                                <Settings className="h-4 w-4" />
+                            </Link>
+                        }
+                    />
 
                     {/* User Profile Menu */}
                     <DropdownMenu>
