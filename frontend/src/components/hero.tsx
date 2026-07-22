@@ -57,15 +57,18 @@ export function HeroSection() {
             </section>
 
             {/* Recently Used Section with White Background Container */}
-            <section className="space-y-9 rounded-xl bg-white p-4 shadow-xs sm:p-6">
+            <section className="space-y-6 rounded-xl border border-subtle bg-surface p-4 shadow-sm sm:p-6">
+                {/* Header Section */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 font-bold text-text-primary text-lg sm:text-xl">
-                        <History className="h-5 w-5 text-accent-primary" />
-                        <h2>Recently Used</h2>
+                    <div className="flex items-center gap-2">
+                        <History className="h-5 w-5 shrink-0 text-accent-primary" />
+                        <h2 className="text-base font-bold tracking-tight text-text-primary sm:text-lg">
+                            Recently Used
+                        </h2>
                     </div>
                     <button
                         type="button"
-                        className="text-xs font-semibold text-accent-primary transition-colors hover:text-accent-primary-hover"
+                        className="cursor-pointer text-xs font-semibold text-accent-primary transition-colors hover:text-accent-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary rounded-md px-1.5 py-1"
                         onClick={() => {
                             /* Handle clear history logic */
                         }}
@@ -75,22 +78,24 @@ export function HeroSection() {
                 </div>
 
                 {/* Recent Cards Grid */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {recentlyUsed.map((item) => (
                         <div
                             key={item.title}
-                            className="flex items-center gap-3.5 rounded-lg border border-subtle bg-page p-3.5 transition-all hover:bg-surface hover:shadow-xs"
+                            className="group relative flex cursor-pointer items-center gap-3.5 rounded-lg border border-subtle bg-page p-3.5 transition-all hover:bg-surface hover:shadow-sm hover:border-accent-primary/20"
                         >
                             <div
-                                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${item.iconBg}`}
+                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.iconBg} transition-transform group-hover:scale-105`}
                             >
                                 <item.icon className="h-5 w-5" />
                             </div>
-                            <div>
-                                <h3 className="font-semibold text-text-primary text-sm sm:text-base">
+                            <div className="min-w-0 flex-1">
+                                <h3 className="truncate text-sm font-semibold text-text-primary group-hover:text-accent-primary transition-colors">
                                     {item.title}
                                 </h3>
-                                <p className="text-xs text-text-secondary">{item.time}</p>
+                                <p className="truncate text-xs font-medium text-text-secondary">
+                                    {item.time}
+                                </p>
                             </div>
                         </div>
                     ))}
