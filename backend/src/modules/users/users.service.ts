@@ -27,9 +27,7 @@ export class UsersService {
       },
       select: {
         id: true,
-        first_name: true,
-        last_name: true,
-        avatarUrl: true,
+        name: true,
       },
     });
 
@@ -62,51 +60,18 @@ export class UsersService {
       select: {
         id: true,
         email: true,
-        first_name: true,
-        last_name: true,
-        userName: true,
-        gender: true,
-        district: true,
-        upazila: true,
-        avatarUrl: true,
-        bio: true,
-        dateOfBirth: true,
-        isVerified: true,
+        name: true,
         createdAt: true,
       },
     });
     if (!user) throw new NotFoundException('User not found');
 
-    const userPosts = await this.prisma.post.findMany({
-      where: { authorId: userId },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        imageUrl: true,
-        createdAt: true,
-        upvoats: true,
-        downvoats: true,
-        neutralvoats: true,
-        comment_count: true,
-        _count: {
-          select: {
-            comments: true,
-            postVotes: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 100,
-    });
+  
 
     return {
       success: true,
       data: {
         ...user,
-        posts: userPosts,
       },
     };
   }

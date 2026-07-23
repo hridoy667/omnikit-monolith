@@ -1,172 +1,48 @@
-generator client {
-  provider = "prisma-client-js"
-  // output   = "../generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TemplateType {
+  CLASSIC
+  MODERN
+  PHOTO
+}
+
 model User {
-  id                 String              @id @default(uuid())
-  email              String              @unique
-  phone              String?             @unique
-  first_name         String?
-  last_name          String?
-  userName           String?             @unique
-  password           String
-  gender             Gender?
-  district           String?
-  upazila            String?
-  avatarUrl          String?
-  bio                String?
-  dateOfBirth        DateTime?
-  latitude           Float?
-  longitude          Float?
-  type               String?             @default("user")
-  status             Int?                @default(1)
-  isVerified         Boolean             @default(false)
-  firebaseToken      String?             @unique
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  interests          UserInterest[]
-  posts              post[]
-  postVotes          postVote[]
-  sentMessages       Message[]           @relation("SentMessages")
-  roomMemberships    Room[]
-  verificationTokens verificationToken[]
-  comments           comment[]
-
-  @@map("users")
-}
-
-enum Interest {
-  AGRICULTURE
-  CAREER
-  TECHNOLOGY
-  SPORTS
-  ART
-}
-
-enum Gender {
-  male
-  female
-}
-
-model UserInterest {
-  id       String   @id @default(uuid())
-  userId   String
-  interest Interest
-  user     User     @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("user_interests")
-}
-
-model districts {
-  id        Int    @id @default(autoincrement())
-  name      String @unique
-  latitude  Float
-  longitude Float
-
-  @@map("districts")
-}
-
-model post {
-  id           String                                @id @default(uuid())
-  title        String?
-  content      String?
-  imageUrl     String[]
-  authorId     String
-  upvoats      Int                                   @default(0)
-  downvoats    Int                                   @default(0)
-  neutralvoats Int                                   @default(0)
-  comment_count Int       @default(0) 
-  author       User                                  @relation(fields: [authorId], references: [id])
-  createdAt    DateTime                              @default(now())
-  updatedAt    DateTime                              @updatedAt
-  postVotes    postVote[]
-  comments     comment[]
-  // PostGIS location field
-  location     Unsupported("geometry(Point, 4326)")?
-  // We still keep these for easy reading in the frontend
-  latitude     Float?
-  longitude    Float?
-
-  @@index([location], name: "location_idx", type: Gist)
-  @@map("posts")
-}
-
-enum vote {
-  UPVOTE
-  DOWNVOTE
-  NEUTRAL
-}
-
-model postVote {
-  id     String @id @default(uuid())
-  postId String
-  userId String
-  vote   vote
-  post   post   @relation(fields: [postId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  @@unique([userId, postId])
-  @@map("post_votes")
-}
-
-model comment {
-  id         String   @id @default(uuid())
-  content    String
-  authorId   String
-  postId     String
-  // --- New Fields for Replies ---
-  parentId   String?   // If null, it's a top-level comment
-  parent     comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies    comment[] @relation("CommentReplies")
-  hasReplies Boolean  @default(false)
-  author     User     @relation(fields: [authorId], references: [id])
-  post       post     @relation(fields: [postId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@map("comments")
-}
-
-model Room {
-  id        String    @id @default(uuid())
-  roomKey   String?   @unique
-  type      RoomType  @default(DIRECT)
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
   name      String?
-  members   User[]
-  messages  Message[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@map("rooms")
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tokens    verificationToken[]
+  resumes   Resume[]
 }
 
-model Message {
-  id        String    @id @default(uuid())
-  content   String
-  senderId  String
-  roomId    String
-  readAt    DateTime?
-  createdAt DateTime  @default(now())
-  sender    User      @relation("SentMessages", fields: [senderId], references: [id])
-  room      Room      @relation(fields: [roomId], references: [id])
+model Resume {
+  id          String       @id @default(uuid())
+  title       String       @default("Untitled Resume")
+  template    TemplateType @default(CLASSIC)
+  
+  // Storing resume structure dynamically as JSON for maximum frontend flexibility
+  content     Json         
+  
+  userId      String?
+  user        User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("messages")
-}
-
-enum RoomType {
-  DIRECT
-  GROUP
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model verificationToken {

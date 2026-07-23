@@ -65,7 +65,7 @@ export function Navbar() {
             </div>
 
             <span className="font-semibold text-text-primary text-base tracking-tight">
-              OmniTools
+              Toolq.io
             </span>
           </Link>
         </div>
@@ -160,7 +160,7 @@ export function Navbar() {
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-primary text-white">
                     <Layers className="h-3.5 w-3.5" />
                   </div>
-                  OmniTools
+                  Toolq.io
                 </SheetTitle>
               </SheetHeader>
 

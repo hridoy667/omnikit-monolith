@@ -342,7 +342,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
         </div>
         <div className="flex flex-col group-data-[collapsible=icon]:hidden">
           <span className="text-sm font-bold tracking-tight text-text-primary">
-            OmniTools
+            Toolq.io
           </span>
           <span className="text-[10px] text-text-secondary font-medium">
             Utility Suite v1.0

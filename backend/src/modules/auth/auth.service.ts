@@ -7,6 +7,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Req,
 } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -20,6 +21,7 @@ import { Redis } from 'ioredis';
 import { UcodeRepository } from 'src/common/ucode/ucode.repository';
 import { verifyDto } from './dto/verify-email.dto';
 import { JwtService } from '@nestjs/jwt';
+import { getHashedIp } from 'src/common/utils/ip.util';
 
 @Injectable()
 export class AuthService {
@@ -115,12 +117,8 @@ export class AuthService {
       const newUser = await this.prisma.user.create({
         data: {
           email: tempUserData.email,
-          first_name: tempUserData.first_name,
-          last_name: tempUserData.last_name,
+          name: tempUserData.first_name,
           password: tempUserData.password,
-          avatarUrl: tempUserData.avatarUrl,
-          district: tempUserData.district,
-          gender: tempUserData.gender,
         },
       });
 
@@ -136,7 +134,7 @@ export class AuthService {
           email: newUser.email,
         },
       };
-    } catch (error) {
+    } catch (error:any) {
       // Rethrow if it's already a NestJS exception, otherwise wrap it
       if (
         error instanceof ConflictException ||
@@ -190,10 +188,9 @@ export class AuthService {
     if (!isPasswordValid) throw new BadRequestException('Invalid credentials');
 
     const payload = {
-      firstName: user.first_name,
+      firstName: user.name,
       email: user.email,
       sub: user.id,
-      district: user.district,
     };
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: '5h' });
@@ -207,17 +204,36 @@ export class AuthService {
     };
   }
 
+  async generateGuestSession(@Req() req: any) {
+
+    const hashedIp = getHashedIp(req);
+
+    // Payload stored inside the JWT
+    const payload = {
+      sub: `guest_${hashedIp}`, // Unique identifier key for Redis rate limiting
+      isGuest: true,
+      hashedIp,
+    };
+
+    // Sign token valid for 24 hours
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '24h',
+    });
+
+    return {
+      accessToken,
+      isGuest: true,
+      expiresIn: 86400,
+    };
+  }
+
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
-        first_name: true,
-        last_name: true,
+        name: true,
         email: true,
-        avatarUrl: true,
-        district: true,
-        userName: true,
       },
     });
 
@@ -250,7 +266,7 @@ export class AuthService {
         success: true,
         message: 'You logged out successfully',
       };
-    } catch (error) {
+    } catch (error:any) {
       return {
         success: false,
         message: error.message,

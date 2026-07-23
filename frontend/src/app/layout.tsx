@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "OmniTools — All-in-One AI & Developer Utility Suite",
-    template: "%s | OmniTools",
+    default: "Toolq — All-in-One AI & Developer Utility Suite",
+    template: "%s | Toolq.io",
   },
   description:
     "Free, fast, and privacy-first web utilities. AI content generators, image compressors, PDF toolkits, QR suites, ATS resume builders, and developer tools in one place.",
@@ -37,18 +37,18 @@ export const metadata: Metadata = {
     "SEO Auditor",
     "URL Shortener",
   ],
-  authors: [{ name: "OmniTools Team" }],
+  authors: [{ name: "Toolq.io Team" }],
   openGraph: {
-    title: "OmniTools — All-in-One AI & Developer Utility Suite",
+    title: "Toolq — All-in-One AI & Developer Utility Suite",
     description:
       "Boost your productivity with free AI content repurposers, PDF suites, image compressors, and developer utilities.",
     type: "website",
     locale: "en_US",
-    siteName: "OmniTools",
+    siteName: "Toolq.io",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OmniTools — All-in-One AI & Developer Utility Suite",
+    title: "Toolq.io— All-in-One AI & Developer Utility Suite",
     description:
       "Free, fast, and privacy-first web utilities. AI generators, media compressors, PDF toolkits, and developer tools.",
   },

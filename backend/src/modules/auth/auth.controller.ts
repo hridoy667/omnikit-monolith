@@ -13,6 +13,8 @@ import {
   Request,
   Req,
   Get,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -69,6 +71,12 @@ export class AuthController {
   @ApiOperation({ summary: 'Login user' })
   login(@Body() logindto: LoginDto) {
     return this.authService.login(logindto);
+  }
+
+  @Post('guest-session')
+  @HttpCode(HttpStatus.OK)
+  async createGuestSession(@Req() req: Request) {
+    return this.authService.generateGuestSession(req);
   }
 
   @Get('me')
