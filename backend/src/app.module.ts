@@ -7,6 +7,9 @@ import { AppService } from './app.service';
 import configuration from './config/app.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { AiModule } from './modules/ai/ai.module';
+import { MediaModule } from './modules/media/media.module';
+import { WebToolsModule } from './modules/web-tools/web-tools.module';
 
 @Module({
   imports: [
@@ -45,6 +48,9 @@ import { UsersModule } from './modules/users/users.module';
         },
       }),
     }),
+    AiModule,
+    MediaModule,
+    WebToolsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

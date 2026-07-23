@@ -1,10 +1,10 @@
 export default () => ({
   app: {
-    name: process.env.APPNAME,
+    name: process.env.APPNAME || 'MyApp',
     key: process.env.APP_KEY,
     url: process.env.APP_URL,
     frontend_url: process.env.FRONTEND_URL,
-    // port: parseInt(process.env.PORT, 10) || 3000,
+    port: parseInt(process.env.PORT || '3000', 10),
   },
 
   fileSystems: {
@@ -34,26 +34,33 @@ export default () => ({
   redis: {
     host: process.env.REDIS_HOST,
     password: process.env.REDIS_PASSWORD,
-    port: process.env.REDIS_PORT,
+    port: parseInt(process.env.REDIS_PORT || '6379', 10),
   },
 
   security: {
-    salt: 10,
+    salt: parseInt(process.env.SALT_ROUNDS || '10', 10),
   },
 
   jwt: {
     secret: process.env.JWT_SECRET,
-    expiry: process.env.JWT_EXPIRY,
+    expiry: process.env.JWT_EXPIRY || '1d',
   },
 
   mail: {
     host: process.env.MAIL_HOST || 'smtp.gmail.com',
-    port: process.env.MAIL_PORT || 587,
+    port: parseInt(process.env.MAIL_PORT || '587', 10),
     user: process.env.MAIL_USERNAME,
     password: process.env.MAIL_PASSWORD,
     from: process.env.MAIL_FROM_ADDRESS,
   },
 
+  ai: {
+    groq: process.env.GROQ_API_KEY,
+    openRouter: process.env.OPENROUTER_API_KEY,
+  },
+  image:{
+    unsplash:process.env.UNSPLASH_ACCESS_KEY,
+  },
   auth: {
     google: {
       app_id: process.env.GOOGLE_APP_ID,
@@ -74,19 +81,14 @@ export default () => ({
     },
   },
 
-  /**
-   * Storage directory
-   */
   storageUrl: {
     rootUrl: './public/storage',
     rootUrlPublic: '/public/storage',
-    // storage directory
     package: '/package',
     destination: '/destination',
     blog: '/blog',
     avatar: 'avatar',
     websiteInfo: '/website-info',
-    // chat
     attachment: '/attachment',
   },
 
