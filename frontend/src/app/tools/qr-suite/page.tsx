@@ -1,43 +1,134 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 import {
   ChevronRight,
   Sparkles,
   Download,
-  Link,
+  Link as LinkIcon,
   Wifi,
   MoreVertical,
-  QrCode,
+  QrCode as QrCodeIcon,
+  Mail,
+  Type,
+  Trash2,
 } from "lucide-react";
 
 type InputType = "URL" | "Text" | "Wi-Fi" | "Email";
 type CornerStyle = "square" | "rounded" | "dots";
 
+interface RecentItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  type: InputType;
+  createdAt: string;
+}
+
 export default function QRCodeStudioPage() {
   const [inputType, setInputType] = useState<InputType>("URL");
   const [content, setContent] = useState<string>("https://example.com");
-  
+
   // Styling States
   const [fgColor, setFgColor] = useState<string>("#1E1B2E");
   const [bgColor, setBgColor] = useState<string>("#FFFFFF");
   const [cornerStyle, setCornerStyle] = useState<CornerStyle>("square");
 
-  // Mock Recent Generations for Right Column
-  const recentGenerations = [
-    {
-      id: "1",
-      title: "Portfolio Website",
-      subtitle: "omnitools.dev/u/john-doe",
-      icon: Link,
-    },
-    {
-      id: "2",
-      title: "Home Guest Wi-Fi",
-      subtitle: "Generated 2 days ago",
-      icon: Wifi,
-    },
-  ];
+  // Recent Generations State
+  const [recentGenerations, setRecentGenerations] = useState<RecentItem[]>([]);
+
+  // Download Ref
+  const qrRef = useRef<HTMLDivElement>(null);
+
+  // Load items from localStorage on initial render
+  useEffect(() => {
+    const saved = localStorage.getItem("qr_recent_generations");
+    if (saved) {
+      try {
+        setRecentGenerations(JSON.parse(saved));
+      } catch (error) {
+        console.error("Failed to parse recent generations from localStorage", error);
+      }
+    }
+  }, []);
+
+  // Helper to save recent item to localStorage
+  const saveToRecent = (textToSave: string, type: InputType) => {
+    if (!textToSave.trim()) return;
+
+    const newItem: RecentItem = {
+      id: Date.now().toString(),
+      title: textToSave.length > 28 ? `${textToSave.slice(0, 28)}...` : textToSave,
+      subtitle: `${type} • ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+      type: type,
+      createdAt: new Date().toISOString(),
+    };
+
+    setRecentGenerations((prev) => {
+      // Prevent duplicates at top
+      const filtered = prev.filter((item) => item.title !== newItem.title);
+      const updated = [newItem, ...filtered].slice(0, 5); // Keep last 5
+      localStorage.setItem("qr_recent_generations", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Download Handler & Trigger Save
+  const handleDownload = () => {
+    const canvas = qrRef.current?.querySelector("canvas");
+    if (!canvas) return;
+
+    // Save to localStorage when generated/downloaded
+    saveToRecent(content, inputType);
+
+    const image = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = `qrcode-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Remove single item
+  const handleRemoveRecent = (id: string) => {
+    setRecentGenerations((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      localStorage.setItem("qr_recent_generations", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Get icon by InputType
+  const getIconForType = (type: InputType) => {
+    switch (type) {
+      case "URL":
+        return LinkIcon;
+      case "Wi-Fi":
+        return Wifi;
+      case "Email":
+        return Mail;
+      case "Text":
+      default:
+        return Type;
+    }
+  };
+
+  const getPlaceholder = () => {
+    switch (inputType) {
+      case "URL":
+        return "https://example.com";
+      case "Text":
+        return "Enter your custom text here...";
+      case "Wi-Fi":
+        return "WIFI:S:MyNetwork;P:MyPassword;T:WPA;;";
+      case "Email":
+        return "mailto:someone@example.com?subject=Hello";
+      default:
+        return "Type here...";
+    }
+  };
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6 lg:p-8">
@@ -52,16 +143,15 @@ export default function QRCodeStudioPage() {
           QR Code Studio
         </h1>
         <p className="max-w-3xl text-sm text-text-secondary">
-          Create professional, custom-styled QR codes instantly for URLs, text, Wi-Fi networks, and more.
+          Create professional, custom-styled QR codes instantly for URLs, text,
+          Wi-Fi networks, and more.
         </p>
       </div>
 
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        
-        {/* LEFT COLUMN: Main Controls + Ad Box below */}
+        {/* LEFT COLUMN: Main Controls */}
         <div className="space-y-6 lg:col-span-6">
-          {/* Main Controls Card */}
           <div className="rounded-xl border border-subtle bg-surface p-5 shadow-xs space-y-5">
             {/* Input Type Selector */}
             <div className="space-y-2">
@@ -92,7 +182,7 @@ export default function QRCodeStudioPage() {
                 rows={3}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="https://example.com or enter custom text..."
+                placeholder={getPlaceholder()}
                 className="w-full rounded-xl border border-subtle bg-page p-3 text-xs font-medium text-text-primary focus:border-accent-primary focus:outline-none focus:ring-1 focus:ring-accent-primary placeholder:text-text-secondary/50 resize-none"
               />
             </div>
@@ -117,7 +207,9 @@ export default function QRCodeStudioPage() {
                           onClick={() => setFgColor(c)}
                           style={{ backgroundColor: c }}
                           className={`h-5 w-5 rounded-full transition-transform cursor-pointer ${
-                            fgColor === c ? "ring-2 ring-accent-primary ring-offset-2 scale-110" : ""
+                            fgColor === c
+                              ? "ring-2 ring-accent-primary ring-offset-2 scale-110"
+                              : ""
                           }`}
                         />
                       ))}
@@ -134,7 +226,9 @@ export default function QRCodeStudioPage() {
                           onClick={() => setBgColor(c)}
                           style={{ backgroundColor: c }}
                           className={`h-5 w-5 rounded-full border border-subtle transition-transform cursor-pointer ${
-                            bgColor === c ? "ring-2 ring-accent-primary ring-offset-2 scale-110" : ""
+                            bgColor === c
+                              ? "ring-2 ring-accent-primary ring-offset-2 scale-110"
+                              : ""
                           }`}
                         />
                       ))}
@@ -149,47 +243,29 @@ export default function QRCodeStudioPage() {
                   Corner Style
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {/* Square */}
-                  <button
-                    type="button"
-                    onClick={() => setCornerStyle("square")}
-                    className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-pointer ${
-                      cornerStyle === "square"
-                        ? "border-accent-primary bg-accent-primary/5 text-accent-primary"
-                        : "border-subtle bg-page text-text-secondary hover:text-text-primary"
-                    }`}
-                  >
-                    <div className="h-4 w-4 bg-current" />
-                    <span className="text-[10px] font-bold">Square</span>
-                  </button>
-
-                  {/* Rounded */}
-                  <button
-                    type="button"
-                    onClick={() => setCornerStyle("rounded")}
-                    className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-pointer ${
-                      cornerStyle === "rounded"
-                        ? "border-accent-primary bg-accent-primary/5 text-accent-primary"
-                        : "border-subtle bg-page text-text-secondary hover:text-text-primary"
-                    }`}
-                  >
-                    <div className="h-4 w-4 rounded-sm bg-current" />
-                    <span className="text-[10px] font-bold">Rounded</span>
-                  </button>
-
-                  {/* Dots */}
-                  <button
-                    type="button"
-                    onClick={() => setCornerStyle("dots")}
-                    className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-pointer ${
-                      cornerStyle === "dots"
-                        ? "border-accent-primary bg-accent-primary/5 text-accent-primary"
-                        : "border-subtle bg-page text-text-secondary hover:text-text-primary"
-                    }`}
-                  >
-                    <div className="h-4 w-4 rounded-full bg-current" />
-                    <span className="text-[10px] font-bold">Dots</span>
-                  </button>
+                  {(["square", "rounded", "dots"] as CornerStyle[]).map((style) => (
+                    <button
+                      key={style}
+                      type="button"
+                      onClick={() => setCornerStyle(style)}
+                      className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-pointer capitalize ${
+                        cornerStyle === style
+                          ? "border-accent-primary bg-accent-primary/5 text-accent-primary"
+                          : "border-subtle bg-page text-text-secondary hover:text-text-primary"
+                      }`}
+                    >
+                      <div
+                        className={`h-4 w-4 bg-current ${
+                          style === "rounded"
+                            ? "rounded-sm"
+                            : style === "dots"
+                            ? "rounded-full"
+                            : ""
+                        }`}
+                      />
+                      <span className="text-[10px] font-bold">{style}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -197,14 +273,18 @@ export default function QRCodeStudioPage() {
             {/* Primary Action Button */}
             <button
               type="button"
+              onClick={() => {
+                saveToRecent(content, inputType);
+                handleDownload();
+              }}
               className="group flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent-primary text-sm font-semibold text-white shadow-xs transition-all hover:bg-accent-primary-hover active:scale-[0.99] cursor-pointer"
             >
               <Sparkles className="h-4 w-4" />
-              <span>Generate QR Code</span>
+              <span>Generate & Download QR</span>
             </button>
           </div>
 
-          {/* Ad Banner Box Under Left Div */}
+          {/* Ad Banner Placeholder */}
           <div className="flex h-24 w-full items-center justify-center rounded-xl border border-dashed border-subtle bg-page text-xs font-bold uppercase tracking-widest text-text-secondary/40">
             PREMIUM AD PLACEMENT
           </div>
@@ -216,10 +296,11 @@ export default function QRCodeStudioPage() {
           <div className="rounded-xl border border-subtle bg-surface p-5 shadow-xs space-y-5">
             <div className="flex items-center justify-between border-b border-subtle/60 pb-3">
               <h2 className="text-base font-bold text-text-primary">
-                QR Code Preview
+                Live QR Preview
               </h2>
               <button
                 type="button"
+                onClick={handleDownload}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-subtle bg-page px-3 py-1.5 text-xs font-semibold text-text-primary transition-all hover:border-accent-primary/40 hover:bg-surface cursor-pointer"
               >
                 <Download className="h-3.5 w-3.5 text-text-secondary" />
@@ -227,19 +308,30 @@ export default function QRCodeStudioPage() {
               </button>
             </div>
 
-            {/* Visual Preview Container */}
+            {/* Visual Live Canvas */}
             <div className="flex flex-col items-center justify-center rounded-xl bg-page p-8">
               <div
                 style={{ backgroundColor: bgColor }}
                 className="flex items-center justify-center rounded-xl p-6 shadow-sm border border-subtle"
+                ref={qrRef}
               >
-                {/* Generated QR Placeholder / Canvas */}
-                <div className="relative flex h-48 w-48 items-center justify-center">
-                  <QrCode
-                    className="h-full w-full"
-                    style={{ color: fgColor }}
+                {content.trim() ? (
+                  <QRCodeCanvas
+                    value={content}
+                    size={192}
+                    fgColor={fgColor}
+                    bgColor={bgColor}
+                    level="H"
+                    marginSize={1}
                   />
-                </div>
+                ) : (
+                  <div className="flex h-48 w-48 flex-col items-center justify-center text-text-secondary/50">
+                    <QrCodeIcon className="h-12 w-12 mb-2" />
+                    <span className="text-xs font-medium">
+                      Enter content to preview
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -249,7 +341,7 @@ export default function QRCodeStudioPage() {
                 <p className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                   Format
                 </p>
-                <p className="text-xs font-bold text-text-primary">SVG</p>
+                <p className="text-xs font-bold text-text-primary">PNG / SVG</p>
               </div>
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
@@ -271,41 +363,55 @@ export default function QRCodeStudioPage() {
             <h3 className="text-xs font-bold text-text-primary">
               Your Recent Generations
             </h3>
-            <div className="space-y-2">
-              {recentGenerations.map((item) => {
-                const IconComponent = item.icon;
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between rounded-xl border border-subtle bg-surface p-3 transition-all hover:border-accent-primary/20"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-primary/10 text-accent-primary">
-                        <IconComponent className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-text-primary">
-                          {item.title}
-                        </p>
-                        <p className="truncate text-[11px] text-text-secondary">
-                          {item.subtitle}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      aria-label="Options"
-                      className="p-1 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+
+            {recentGenerations.length === 0 ? (
+              <p className="text-xs text-text-secondary italic">
+                No recent generations found. Generate a QR code to see it here!
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {recentGenerations.map((item) => {
+                  const IconComponent = getIconForType(item.type);
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between rounded-xl border border-subtle bg-surface p-3 transition-all hover:border-accent-primary/20"
                     >
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+                      <div
+                        className="flex items-center gap-3 min-w-0 cursor-pointer"
+                        onClick={() => {
+                          setContent(item.title);
+                          setInputType(item.type);
+                        }}
+                      >
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-primary/10 text-accent-primary">
+                          <IconComponent className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-text-primary">
+                            {item.title}
+                          </p>
+                          <p className="truncate text-[11px] text-text-secondary">
+                            {item.subtitle}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveRecent(item.id)}
+                        aria-label="Remove item"
+                        className="p-1 text-text-secondary hover:text-red-500 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
-
       </div>
     </div>
   );

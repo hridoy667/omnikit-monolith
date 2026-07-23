@@ -66,8 +66,8 @@ const toolsList: ToolItem[] = [
   },
   {
     id: "6",
-    title: "Secure File & Link Sharing",
-    description: "Share files and links securely with self-expiring 24-hour temporary links.",
+    title: "Secure File Sharing",
+    description: "Share files securely with self-expiring 24-hour temporary links.",
     url: "/tools/secure-generator",
     icon: ShieldCheck,
     tags: ["Security", "Privacy"],

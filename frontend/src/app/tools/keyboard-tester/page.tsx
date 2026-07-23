@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   RotateCcw,
   Volume2,
@@ -20,36 +20,101 @@ export default function KeyboardTesterPage() {
   const [layout, setLayout] = useState<KeyboardLayout>("80% TKL");
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
-  const [testedKeys, setTestedKeys] = useState<Set<string>>(
-    new Set(["Backquote", "Digit4", "ShiftLeft", "KeyZ", "KeyX", "KeyC", "KeyV", "KeyB", "KeyN", "KeyM", "Comma", "Period", "Space"])
-  );
-  const [lastKey, setLastKey] = useState<{ code: string; label: string }>({
-    code: "ShiftLeft",
-    label: "L-SHIFT",
+  const [testedKeys, setTestedKeys] = useState<Set<string>>(new Set());
+  const [lastKey, setLastKey] = useState<{ code: string; label: string; keyCode: number }>({
+    code: "None",
+    label: "None",
+    keyCode: 0,
   });
 
-  // Listeners for real keyboard interaction
+  const [activeModifiers, setActiveModifiers] = useState<string[]>([]);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // Play Mechanical Click Sound using Web Audio API
+  const playClickSound = useCallback(() => {
+    if (!soundEnabled) return;
+
+    try {
+      if (!audioCtxRef.current) {
+        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        audioCtxRef.current = new AudioContextClass();
+      }
+
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.04);
+
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.04);
+    } catch {
+      // Audio context fallbacks silently if restricted by browser policies
+    }
+  }, [soundEnabled]);
+
+  // Global Keyboard Event Listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      e.preventDefault();
+      // Prevent browser default actions for keys like Tab, Backspace, Arrow keys, spacebar scroll
+      if (["Tab", "Backspace", "Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
+        e.preventDefault();
+      }
+
       const code = e.code;
       let label = e.key.toUpperCase();
-      if (code === "Space") label = "Spacebar";
+      if (code === "Space") label = "SPACEBAR";
       if (code === "ShiftLeft") label = "L-SHIFT";
       if (code === "ShiftRight") label = "R-SHIFT";
+      if (code === "ControlLeft") label = "L-CTRL";
+      if (code === "ControlRight") label = "R-CTRL";
+      if (code === "AltLeft") label = "L-ALT";
+      if (code === "AltRight") label = "R-ALT";
 
-      setPressedKeys((prev) => new Set(prev).add(code));
+      // Track active modifiers
+      const modifiers: string[] = [];
+      if (e.shiftKey) modifiers.push("SHIFT");
+      if (e.ctrlKey) modifiers.push("CTRL");
+      if (e.altKey) modifiers.push("ALT");
+      if (e.metaKey) modifiers.push("CMD");
+      setActiveModifiers(modifiers);
+
+      setPressedKeys((prev) => {
+        if (!prev.has(code)) playClickSound();
+        return new Set(prev).add(code);
+      });
+
       setTestedKeys((prev) => new Set(prev).add(code));
-      setLastKey({ code, label });
+      setLastKey({ code, label, keyCode: e.keyCode || 0 });
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      e.preventDefault();
+      const code = e.code;
       setPressedKeys((prev) => {
         const next = new Set(prev);
-        next.delete(e.code);
+        next.delete(code);
         return next;
       });
+
+      // Update active modifiers
+      const modifiers: string[] = [];
+      if (e.shiftKey) modifiers.push("SHIFT");
+      if (e.ctrlKey) modifiers.push("CTRL");
+      if (e.altKey) modifiers.push("ALT");
+      if (e.metaKey) modifiers.push("CMD");
+      setActiveModifiers(modifiers);
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -59,14 +124,38 @@ export default function KeyboardTesterPage() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [playClickSound]);
 
   const handleReset = () => {
     setTestedKeys(new Set());
     setPressedKeys(new Set());
+    setLastKey({ code: "None", label: "None", keyCode: 0 });
+    setActiveModifiers([]);
   };
 
-  // Keyboard Layout Rows
+  // Export Test Report File
+  const handleExportReport = () => {
+    const totalKeysInLayout = layout === "100%" ? 104 : layout === "65%" ? 68 : 87;
+    const reportText = `====================================
+KEYBOARD TEST REPORT
+====================================
+Layout Mode   : ${layout}
+Keys Tested   : ${testedKeys.size} / ${totalKeysInLayout}
+Tested Keys   : ${Array.from(testedKeys).join(", ") || "None"}
+Timestamp     : ${new Date().toLocaleString()}
+====================================`;
+
+    const blob = new Blob([reportText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `keyboard-test-report-${Date.now()}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Layout Rows
   const row1: KeyInfo[] = [
     { code: "Escape", label: "Esc" },
     { code: "F1", label: "F1" },
@@ -157,10 +246,9 @@ export default function KeyboardTesterPage() {
     { code: "AltRight", label: "Opt", width: "w-12" },
   ];
 
-  // Keycap Render Styling (Matching Image Exactly)
+  // Render Keycap Component
   const renderKey = (key: KeyInfo) => {
-    // Hardcoded "K" key as active for design parity if not pressed
-    const isPressed = pressedKeys.has(key.code) || key.code === "KeyK";
+    const isPressed = pressedKeys.has(key.code);
     const isTested = testedKeys.has(key.code);
 
     let keyStyle =
@@ -186,9 +274,12 @@ export default function KeyboardTesterPage() {
     );
   };
 
+  const totalKeysInCurrentLayout =
+    layout === "100%" ? 104 : layout === "65%" ? 68 : 87;
+
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8 font-sans">
-      {/* Title & Description */}
+      {/* Header Title */}
       <div className="space-y-1">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
           Keyboard Key Tester
@@ -198,13 +289,12 @@ export default function KeyboardTesterPage() {
         </p>
       </div>
 
-      {/* Main Split Grid Layout */}
+      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        
-        {/* LEFT COLUMN: Controls & Ad Box */}
+        {/* LEFT COLUMN: Controls & Info */}
         <div className="space-y-6 lg:col-span-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6">
-            {/* Keyboard Layout Dropdown */}
+            {/* Keyboard Layout Selector */}
             <div className="space-y-2">
               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 KEYBOARD LAYOUT
@@ -220,7 +310,7 @@ export default function KeyboardTesterPage() {
               </select>
             </div>
 
-            {/* Big Purple Stat Cards */}
+            {/* Stat Cards */}
             <div className="grid grid-cols-2 gap-3">
               {/* Keys Tested */}
               <div className="flex flex-col items-center justify-center rounded-2xl bg-[#f0edff] p-5 text-center">
@@ -228,7 +318,7 @@ export default function KeyboardTesterPage() {
                   KEYS TESTED
                 </span>
                 <span className="mt-2 text-2xl font-black text-indigo-600">
-                  {testedKeys.size} / 87
+                  {testedKeys.size} / {totalKeysInCurrentLayout}
                 </span>
               </div>
 
@@ -237,7 +327,7 @@ export default function KeyboardTesterPage() {
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-400">
                   LAST KEY
                 </span>
-                <span className="mt-1 text-base font-black text-slate-900 leading-tight">
+                <span className="mt-1 text-base font-black text-slate-900 leading-tight truncate max-w-full px-1">
                   [ {lastKey.label} ]
                 </span>
               </div>
@@ -290,10 +380,9 @@ export default function KeyboardTesterPage() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Interactive Virtual Keyboard Window */}
+        {/* RIGHT COLUMN: Interactive Virtual Keyboard */}
         <div className="lg:col-span-8">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#f4f6f8] shadow-xs">
-            
             {/* macOS Window Title Bar */}
             <div className="flex items-center justify-between border-b border-slate-200/80 bg-white/60 px-5 py-3">
               <div className="flex items-center gap-2">
@@ -302,23 +391,25 @@ export default function KeyboardTesterPage() {
                 <div className="h-3 w-3 rounded-full bg-emerald-400" />
               </div>
               <span className="font-mono text-xs font-bold text-slate-400 tracking-wider">
-                VIRTUAL_TKL_ENGINE v2.4
+                VIRTUAL_KEYBOARD_ENGINE v2.4
               </span>
             </div>
 
-            {/* Keyboard Layout Board Area */}
+            {/* Keyboard Canvas Board Area */}
             <div className="p-6 overflow-x-auto">
               <div className="min-w-[620px] space-y-3">
-                {/* Row 1 */}
-                <div className="flex items-center gap-2">
-                  {row1.slice(0, 1).map(renderKey)}
-                  <div className="w-6" /> {/* Gap after ESC */}
-                  {row1.slice(1, 5).map(renderKey)}
-                  <div className="w-6" /> {/* Gap */}
-                  {row1.slice(5, 9).map(renderKey)}
-                  <div className="w-6" /> {/* Gap */}
-                  {row1.slice(9, 13).map(renderKey)}
-                </div>
+                {/* Row 1 (Top F-Keys Row) - Hidden in 65% Compact mode */}
+                {layout !== "65%" && (
+                  <div className="flex items-center gap-2">
+                    {row1.slice(0, 1).map(renderKey)}
+                    <div className="w-6" /> {/* ESC Gap */}
+                    {row1.slice(1, 5).map(renderKey)}
+                    <div className="w-6" /> {/* F4-F5 Gap */}
+                    {row1.slice(5, 9).map(renderKey)}
+                    <div className="w-6" /> {/* F8-F9 Gap */}
+                    {row1.slice(9, 13).map(renderKey)}
+                  </div>
+                )}
 
                 {/* Row 2 */}
                 <div className="flex items-center gap-2">{row2.map(renderKey)}</div>
@@ -337,41 +428,42 @@ export default function KeyboardTesterPage() {
               </div>
             </div>
 
-            {/* Active Key Signal Footer Bar */}
+            {/* Dynamic Signal Footer Bar */}
             <div className="flex flex-wrap items-center justify-between border-t border-slate-200 bg-[#edeef3] p-4 gap-3">
               <div className="flex items-center gap-3">
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
                   ACTIVE KEY SIGNAL
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-lg bg-slate-900 px-3 py-1.5 font-mono text-xs font-bold text-white shadow-xs">
-                    KeyCode: KeyK (75)
+                    {lastKey.code !== "None"
+                      ? `KeyCode: ${lastKey.code} (${lastKey.keyCode})`
+                      : "No Key Pressed"}
                   </span>
-                  <span className="rounded-md bg-slate-200/80 px-2.5 py-1 text-xs font-bold text-slate-600">
-                    L-SHIFT
-                  </span>
-                  <span className="rounded-md bg-slate-200/80 px-2.5 py-1 text-xs font-bold text-slate-600">
-                    CMD
-                  </span>
-                  <span className="rounded-md bg-slate-200/80 px-2.5 py-1 text-xs font-bold text-slate-600">
-                    Z
-                  </span>
+
+                  {activeModifiers.map((mod) => (
+                    <span
+                      key={mod}
+                      className="rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-bold text-white shadow-xs"
+                    >
+                      {mod}
+                    </span>
+                  ))}
                 </div>
               </div>
 
-              {/* Export Button */}
+              {/* Export Test Report Button */}
               <button
                 type="button"
+                onClick={handleExportReport}
                 className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-800 shadow-xs transition-all hover:bg-slate-50 cursor-pointer"
               >
                 <FileText className="h-4 w-4 text-slate-600" />
                 <span>Export Test Report</span>
               </button>
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
   );
